@@ -7,16 +7,16 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+import axios from "axios";
+import colors from "colors";
 import httpProxy from "http-proxy";
-import https from "node:https";
+import { readFileSync } from "node:fs";
 import http, { Server } from "node:http";
+import https from "node:https";
 import net from "node:net";
+import { join } from "node:path";
 import url from "node:url";
 import { getProxyForUrl } from "proxy-from-env";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import colors from "colors";
-import axios from "axios";
 
 function withCORS(headers, request) {
     headers["access-control-allow-origin"] = "*";
@@ -139,7 +139,7 @@ function onProxyResponse(proxy, proxyReq, proxyRes, req, res) {
                     // may occur after aborting a request does not propagate to res.
                     // https://github.com/nodejitsu/node-http-proxy/blob/v1.11.1/lib/http-proxy/passes/web-incoming.js#L134
                     proxyReq.removeAllListeners("error");
-                    proxyReq.once("error", function catchAndIgnoreError() {});
+                    proxyReq.once("error", function catchAndIgnoreError() { });
                     proxyReq.abort();
 
                     // Initiate a new proxy request.
@@ -496,7 +496,7 @@ function createRateLimitChecker(CORSANYWHERE_RATELIMIT) {
     const rateLimitConfig = /^(\d+) (\d+)(?:\s*$|\s+(.+)$)/.exec(CORSANYWHERE_RATELIMIT);
     if (!rateLimitConfig) {
         // No rate limit by default.
-        return function checkRateLimit() {};
+        return function checkRateLimit() { };
     }
     const maxRequestsPerPeriod = parseInt(rateLimitConfig[1]);
     const periodInMinutes = parseInt(rateLimitConfig[2]);
@@ -662,6 +662,7 @@ export async function proxyTs(url: string, headers: any, req, res: http.ServerRe
             ...headers,
         },
     };
+    res.setHeader('Access-Control-Allow-Origin', '*');
 
     // Proxy request and pipe to client
     try {
